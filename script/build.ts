@@ -4,6 +4,10 @@ import {mkdir, cd, exec, find, mv} from "shelljs"
 
 const root = dirname(__dirname)
 
+// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/strict-boolean-expressions
+const arch = (process.env.ARCH || process.arch).toLowerCase()
+const platform = process.platform
+
 function main() {
   const zmq_rev =
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/strict-boolean-expressions
@@ -14,7 +18,7 @@ function main() {
   const libzmq_install_prefix = `${root}/build/libzmq`
 
   const installed_artifact = `${libzmq_install_prefix}/lib/libzmq${
-    process.platform === "win32" ? ".lib" : ".a"
+    platform === "win32" ? ".lib" : ".a"
   }`
 
   const src_dir = `libzmq-${zmq_rev}`
@@ -26,7 +30,7 @@ function main() {
   let build_options: string = ""
 
   // https://cmake.org/cmake/help/latest/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html
-  if (process.platform === "win32") {
+  if (platform === "win32") {
     if (CMAKE_BUILD_TYPE !== "Debug") {
       build_options += " -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
     } else {
@@ -36,7 +40,7 @@ function main() {
 
   build_options += archCMakeOptions()
 
-  if (process.platform === "darwin") {
+  if (platform === "darwin") {
     const MACOSX_DEPLOYMENT_TARGET = "10.15"
     process.env.MACOSX_DEPLOYMENT_TARGET = MACOSX_DEPLOYMENT_TARGET
     build_options += ` -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}`
@@ -70,7 +74,7 @@ function main() {
     build_options += " -DENABLE_DRAFTS=ON"
   }
 
-  console.log(`Building libzmq ${CMAKE_BUILD_TYPE}`)
+  console.log(`Building libzmq ${CMAKE_BUILD_TYPE} for ${arch} on ${platform}`)
 
   // ClangFormat include causes issues but is not required to build.
   const clang_format_file = `${src_dir}/builds/cmake/Modules/ClangFormat.cmake`
@@ -86,7 +90,7 @@ function main() {
   console.log(cmake_build)
   exec(cmake_build, execOptions)
 
-  if (process.platform === "win32") {
+  if (platform === "win32") {
     // rename libzmq-v143-mt-s-4_3_4.lib to libzmq.lib
     const build_file = find(`${libzmq_install_prefix}/lib/*.lib`)[0]
     mv(build_file, `${libzmq_install_prefix}/lib/libzmq.lib`)
@@ -96,10 +100,7 @@ function main() {
 main()
 
 function archCMakeOptions() {
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/strict-boolean-expressions
-  const arch = (process.env.ARCH || process.arch).toLowerCase()
-
-  if (process.platform === "win32") {
+  if (platform === "win32") {
     // CMAKE_GENERATOR_PLATFORM only supported on Windows
     // https://cmake.org/cmake/help/latest/variable/CMAKE_GENERATOR_PLATFORM.html
 
@@ -114,7 +115,7 @@ function archCMakeOptions() {
     }
   }
 
-  if (process.platform === "darwin") {
+  if (platform === "darwin") {
     // handle MacOS Arm
     switch (arch) {
       case "x64":
