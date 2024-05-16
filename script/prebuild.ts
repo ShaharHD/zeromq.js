@@ -12,9 +12,14 @@ async function main() {
   if (typeof process.env.TRIPLE === "string") {
     const TRIPLE = process.env.TRIPLE
 
-    const GCC = process.env.GCC
-    process.env.CC = `${TRIPLE}-gcc-${GCC}`
-    process.env.CXX = `${TRIPLE}-g++-${GCC}`
+    process.env.CC = `${TRIPLE}-gcc`
+    process.env.CXX = `${TRIPLE}-g++`
+
+    const GCC = process.env.GCC ?? ""
+    if (GCC) {
+      process.env.CC += `-${GCC}`
+      process.env.CXX = `-${GCC}`
+    }
 
     const STRIP = `${TRIPLE}-strip`
     process.env.PREBUILD_STRIP_BIN = STRIP
