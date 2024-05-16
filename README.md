@@ -356,10 +356,12 @@ When submitting pull requests for new socket/context options, please consider th
 The test suite can be run with:
 
 ```sh
-npm install
-npm run build
-npm run test
+pnpm install
+pnpm run build
+pnpm run test
 ```
+
+> Install `pnpm` using `npm i -g pnpm` missing
 
 The test suite will validate and fix the coding style, run all unit tests and verify the validity of the included
 TypeScript type definitions.
